@@ -673,9 +673,7 @@ class TestOnEvictionCallback:
         def on_eviction(tool_name: str, file_path: str, orig: int, preview: int) -> None:
             calls.append((tool_name, file_path, orig, preview))
 
-        processor = EvictionProcessor(
-            backend=backend, token_limit=10, on_eviction=on_eviction
-        )
+        processor = EvictionProcessor(backend=backend, token_limit=10, on_eviction=on_eviction)
         ctx = _make_ctx(backend)
 
         large_content = _make_large_content(20)
@@ -694,14 +692,10 @@ class TestOnEvictionCallback:
         backend = StateBackend()
         calls: list[str] = []
 
-        async def on_eviction(
-            tool_name: str, file_path: str, orig: int, preview: int
-        ) -> None:
+        async def on_eviction(tool_name: str, file_path: str, orig: int, preview: int) -> None:
             calls.append(tool_name)
 
-        processor = EvictionProcessor(
-            backend=backend, token_limit=10, on_eviction=on_eviction
-        )
+        processor = EvictionProcessor(backend=backend, token_limit=10, on_eviction=on_eviction)
         ctx = _make_ctx(backend)
 
         large_content = _make_large_content(20)
@@ -716,9 +710,7 @@ class TestOnEvictionCallback:
         """on_eviction is NOT called when content is small."""
         backend = StateBackend()
         cb = MagicMock()
-        processor = EvictionProcessor(
-            backend=backend, token_limit=100, on_eviction=cb
-        )
+        processor = EvictionProcessor(backend=backend, token_limit=100, on_eviction=cb)
         ctx = _make_ctx(backend)
 
         messages: list[ModelMessage] = [_make_request_with_tool_return("small")]

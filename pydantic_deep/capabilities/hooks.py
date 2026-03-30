@@ -274,9 +274,7 @@ class HooksCapability(AbstractCapability[Any]):
 
         for hook in matched:
             if hook.background:
-                asyncio.create_task(
-                    _run_background_hook(hook, hook_input, backend)
-                )
+                asyncio.create_task(_run_background_hook(hook, hook_input, backend))
                 continue
 
             result = await _run_hook(hook, hook_input, backend)
@@ -288,9 +286,7 @@ class HooksCapability(AbstractCapability[Any]):
 
             if result.modified_args is not None:
                 current_args = result.modified_args
-                hook_input = _build_hook_input(
-                    HookEvent.PRE_TOOL_USE, call.tool_name, current_args
-                )
+                hook_input = _build_hook_input(HookEvent.PRE_TOOL_USE, call.tool_name, current_args)
 
         return current_args
 
@@ -317,9 +313,7 @@ class HooksCapability(AbstractCapability[Any]):
 
         for hook in matched:
             if hook.background:
-                asyncio.create_task(
-                    _run_background_hook(hook, hook_input, backend)
-                )
+                asyncio.create_task(_run_background_hook(hook, hook_input, backend))
                 continue
 
             hook_result = await _run_hook(hook, hook_input, backend)
@@ -345,9 +339,7 @@ class HooksCapability(AbstractCapability[Any]):
         error: Exception,
     ) -> Any:
         """Run POST_TOOL_USE_FAILURE hooks."""
-        matched = _match_hooks(
-            self.hooks, HookEvent.POST_TOOL_USE_FAILURE, call.tool_name
-        )
+        matched = _match_hooks(self.hooks, HookEvent.POST_TOOL_USE_FAILURE, call.tool_name)
         if not matched:
             raise error
 
@@ -362,9 +354,7 @@ class HooksCapability(AbstractCapability[Any]):
 
         for hook in matched:
             if hook.background:
-                asyncio.create_task(
-                    _run_background_hook(hook, hook_input, backend)
-                )
+                asyncio.create_task(_run_background_hook(hook, hook_input, backend))
                 continue
 
             await _run_hook(hook, hook_input, backend)

@@ -151,11 +151,7 @@ class TestDeepAgentFromFile:
 
     def test_from_yaml_file(self, tmp_path: Path):
         """Load agent from YAML file."""
-        yaml_content = (
-            "include_subagents: false\n"
-            "include_skills: false\n"
-            "cost_tracking: false\n"
-        )
+        yaml_content = "include_subagents: false\ninclude_skills: false\ncost_tracking: false\n"
         spec_file = tmp_path / "agent.yaml"
         spec_file.write_text(yaml_content)
 
@@ -177,11 +173,7 @@ class TestDeepAgentFromFile:
 
     def test_from_yml_extension(self, tmp_path: Path):
         """Load agent from .yml extension (not just .yaml)."""
-        yaml_content = (
-            "include_subagents: false\n"
-            "include_skills: false\n"
-            "cost_tracking: false\n"
-        )
+        yaml_content = "include_subagents: false\ninclude_skills: false\ncost_tracking: false\n"
         spec_file = tmp_path / "agent.yml"
         spec_file.write_text(yaml_content)
 
@@ -191,26 +183,17 @@ class TestDeepAgentFromFile:
     def test_from_file_with_overrides(self, tmp_path: Path):
         """File values can be overridden with kwargs."""
         yaml_content = (
-            "include_subagents: false\n"
-            "include_skills: false\n"
-            "cost_tracking: false\n"
-            "retries: 5\n"
+            "include_subagents: false\ninclude_skills: false\ncost_tracking: false\nretries: 5\n"
         )
         spec_file = tmp_path / "agent.yaml"
         spec_file.write_text(yaml_content)
 
-        agent, deps = DeepAgent.from_file(
-            spec_file, model=TEST_MODEL, retries=10
-        )
+        agent, deps = DeepAgent.from_file(spec_file, model=TEST_MODEL, retries=10)
         assert agent is not None
 
     def test_unknown_extension_tries_yaml(self, tmp_path: Path):
         """Unknown extension tries YAML, then JSON."""
-        yaml_content = (
-            "include_subagents: false\n"
-            "include_skills: false\n"
-            "cost_tracking: false\n"
-        )
+        yaml_content = "include_subagents: false\ninclude_skills: false\ncost_tracking: false\n"
         spec_file = tmp_path / "agent.conf"
         spec_file.write_text(yaml_content)
 

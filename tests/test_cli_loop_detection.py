@@ -34,9 +34,7 @@ def _td(tool: str) -> ToolDefinition:
 
 async def _execute(mw: LoopDetectionMiddleware, tool: str, args: dict[str, Any]) -> dict[str, Any]:
     """Helper to call before_tool_execute with proper args."""
-    return await mw.before_tool_execute(
-        _ctx(), call=_call(tool), tool_def=_td(tool), args=args
-    )
+    return await mw.before_tool_execute(_ctx(), call=_call(tool), tool_def=_td(tool), args=args)
 
 
 class TestHashArgs:

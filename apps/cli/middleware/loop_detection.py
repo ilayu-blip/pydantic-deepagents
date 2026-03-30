@@ -40,9 +40,7 @@ class LoopDetectionMiddleware(AbstractCapability[DeepAgentDeps]):
 
     max_repeats: int = 3
     window_size: int = 15
-    _call_history: list[tuple[str, str]] = field(
-        default_factory=list, init=False, repr=False
-    )
+    _call_history: list[tuple[str, str]] = field(default_factory=list, init=False, repr=False)
 
     async def before_tool_execute(
         self,

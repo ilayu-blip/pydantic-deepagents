@@ -494,7 +494,9 @@ class TestHooksCapability:
     async def test_before_tool_call_no_matching_hooks(self):
         hook = Hook(event=HookEvent.POST_TOOL_USE, command="log")
         mw = HooksCapability([hook])
-        result = await mw.before_tool_execute(_ctx(None), call=_call("execute"), tool_def=_td("execute"), args={"cmd": "ls"})
+        result = await mw.before_tool_execute(
+            _ctx(None), call=_call("execute"), tool_def=_td("execute"), args={"cmd": "ls"}
+        )
         assert result == {"cmd": "ls"}
 
     async def test_before_tool_call_handler_allow(self):
@@ -503,7 +505,9 @@ class TestHooksCapability:
 
         hook = Hook(event=HookEvent.PRE_TOOL_USE, handler=handler)
         mw = HooksCapability([hook])
-        result = await mw.before_tool_execute(_ctx(None), call=_call("execute"), tool_def=_td("execute"), args={"cmd": "ls"})
+        result = await mw.before_tool_execute(
+            _ctx(None), call=_call("execute"), tool_def=_td("execute"), args={"cmd": "ls"}
+        )
         assert result == {"cmd": "ls"}
 
     async def test_before_tool_execute_handler_deny(self):
@@ -523,7 +527,9 @@ class TestHooksCapability:
 
         hook = Hook(event=HookEvent.PRE_TOOL_USE, handler=handler)
         mw = HooksCapability([hook])
-        result = await mw.before_tool_execute(_ctx(None), call=_call("execute"), tool_def=_td("execute"), args={"cmd": "dangerous"})
+        result = await mw.before_tool_execute(
+            _ctx(None), call=_call("execute"), tool_def=_td("execute"), args={"cmd": "dangerous"}
+        )
         assert result == {"cmd": "safe_cmd"}
 
     async def test_before_tool_execute_first_deny_wins(self):
@@ -553,7 +559,9 @@ class TestHooksCapability:
 
         hook = Hook(event=HookEvent.PRE_TOOL_USE, handler=bg_handler, background=True)
         mw = HooksCapability([hook])
-        result = await mw.before_tool_execute(_ctx(None), call=_call("execute"), tool_def=_td("execute"), args={"a": 1})
+        result = await mw.before_tool_execute(
+            _ctx(None), call=_call("execute"), tool_def=_td("execute"), args={"a": 1}
+        )
         # Background hook is fire-and-forget
         assert result == {"a": 1}
         # Give task a moment to complete
@@ -565,7 +573,9 @@ class TestHooksCapability:
         deps = DeepAgentDeps(backend=backend)
         hook = Hook(event=HookEvent.PRE_TOOL_USE, command="checker")
         mw = HooksCapability([hook])
-        result = await mw.before_tool_execute(_ctx(deps), call=_call("execute"), tool_def=_td("execute"), args={"cmd": "ls"})
+        result = await mw.before_tool_execute(
+            _ctx(deps), call=_call("execute"), tool_def=_td("execute"), args={"cmd": "ls"}
+        )
         assert result == {"cmd": "ls"}
 
     async def test_before_tool_execute_command_deny(self):
@@ -581,7 +591,9 @@ class TestHooksCapability:
     async def test_after_tool_call_no_matching_hooks(self):
         hook = Hook(event=HookEvent.PRE_TOOL_USE, command="check")
         mw = HooksCapability([hook])
-        result = await mw.after_tool_execute(_ctx(None), call=_call("t"), tool_def=_td("t"), args={}, result="output")
+        result = await mw.after_tool_execute(
+            _ctx(None), call=_call("t"), tool_def=_td("t"), args={}, result="output"
+        )
         assert result == "output"
 
     async def test_after_tool_call_handler(self):
@@ -590,7 +602,9 @@ class TestHooksCapability:
 
         hook = Hook(event=HookEvent.POST_TOOL_USE, handler=handler)
         mw = HooksCapability([hook])
-        result = await mw.after_tool_execute(_ctx(None), call=_call("t"), tool_def=_td("t"), args={}, result="original")
+        result = await mw.after_tool_execute(
+            _ctx(None), call=_call("t"), tool_def=_td("t"), args={}, result="original"
+        )
         assert result == "modified"
 
     async def test_after_tool_call_no_modification(self):
@@ -599,7 +613,9 @@ class TestHooksCapability:
 
         hook = Hook(event=HookEvent.POST_TOOL_USE, handler=handler)
         mw = HooksCapability([hook])
-        result = await mw.after_tool_execute(_ctx(None), call=_call("t"), tool_def=_td("t"), args={}, result="original")
+        result = await mw.after_tool_execute(
+            _ctx(None), call=_call("t"), tool_def=_td("t"), args={}, result="original"
+        )
         assert result == "original"
 
     async def test_after_tool_call_background(self):
@@ -611,7 +627,9 @@ class TestHooksCapability:
 
         hook = Hook(event=HookEvent.POST_TOOL_USE, handler=bg_handler, background=True)
         mw = HooksCapability([hook])
-        result = await mw.after_tool_execute(_ctx(None), call=_call("t"), tool_def=_td("t"), args={}, result="output")
+        result = await mw.after_tool_execute(
+            _ctx(None), call=_call("t"), tool_def=_td("t"), args={}, result="output"
+        )
         assert result == "output"
         await asyncio.sleep(0.05)
         assert calls == ["bg_post"]
@@ -623,7 +641,9 @@ class TestHooksCapability:
         deps = DeepAgentDeps(backend=backend)
         hook = Hook(event=HookEvent.POST_TOOL_USE, command="logger")
         mw = HooksCapability([hook])
-        result = await mw.after_tool_execute(_ctx(deps), call=_call("t"), tool_def=_td("t"), args={}, result="original")
+        result = await mw.after_tool_execute(
+            _ctx(deps), call=_call("t"), tool_def=_td("t"), args={}, result="original"
+        )
         assert result == "logged"
 
     async def test_on_tool_error_no_matching_hooks(self):
@@ -631,7 +651,10 @@ class TestHooksCapability:
         mw = HooksCapability([hook])
         with pytest.raises(RuntimeError, match="err"):
             await mw.on_tool_execute_error(
-                _ctx(None), call=_call("t"), tool_def=_td("t"), args={},
+                _ctx(None),
+                call=_call("t"),
+                tool_def=_td("t"),
+                args={},
                 error=RuntimeError("err"),
             )
 
@@ -646,8 +669,11 @@ class TestHooksCapability:
         mw = HooksCapability([hook])
         with pytest.raises(RuntimeError, match="boom"):
             await mw.on_tool_execute_error(
-                _ctx(None), call=_call("execute"), tool_def=_td("execute"),
-                args={}, error=RuntimeError("boom"),
+                _ctx(None),
+                call=_call("execute"),
+                tool_def=_td("execute"),
+                args={},
+                error=RuntimeError("boom"),
             )
         assert calls == ["boom"]
 
@@ -666,23 +692,27 @@ class TestHooksCapability:
         mw = HooksCapability([hook])
         with pytest.raises(RuntimeError):
             await mw.on_tool_execute_error(
-                _ctx(None), call=_call("t"), tool_def=_td("t"), args={},
+                _ctx(None),
+                call=_call("t"),
+                tool_def=_td("t"),
+                args={},
                 error=RuntimeError("err"),
             )
         await asyncio.sleep(0.05)
         assert calls == ["bg_error"]
 
     async def test_on_tool_error_command(self):
-        backend = FakeSandboxBackend(
-            {"error-handler": ExecuteResponse(output="", exit_code=0)}
-        )
+        backend = FakeSandboxBackend({"error-handler": ExecuteResponse(output="", exit_code=0)})
         deps = DeepAgentDeps(backend=backend)
         hook = Hook(event=HookEvent.POST_TOOL_USE_FAILURE, command="error-handler")
         mw = HooksCapability([hook])
         with pytest.raises(RuntimeError):
             await mw.on_tool_execute_error(
-                _ctx(deps), call=_call("execute"), tool_def=_td("execute"),
-                args={"cmd": "bad"}, error=RuntimeError("fail"),
+                _ctx(deps),
+                call=_call("execute"),
+                tool_def=_td("execute"),
+                args={"cmd": "bad"},
+                error=RuntimeError("fail"),
             )
         assert len(backend.executed) == 1
 
@@ -701,7 +731,9 @@ class TestHooksCapability:
                 Hook(event=HookEvent.POST_TOOL_USE, handler=handler2),
             ]
         )
-        result = await mw.after_tool_execute(_ctx(None), call=_call("t"), tool_def=_td("t"), args={}, result="original")
+        result = await mw.after_tool_execute(
+            _ctx(None), call=_call("t"), tool_def=_td("t"), args={}, result="original"
+        )
         assert result == "step2"
 
     async def test_multiple_pre_hooks_chain_arg_modifications(self):
@@ -718,7 +750,9 @@ class TestHooksCapability:
                 Hook(event=HookEvent.PRE_TOOL_USE, handler=handler2),
             ]
         )
-        result = await mw.before_tool_execute(_ctx(None), call=_call("execute"), tool_def=_td("execute"), args={"cmd": "original"})
+        result = await mw.before_tool_execute(
+            _ctx(None), call=_call("execute"), tool_def=_td("execute"), args={"cmd": "original"}
+        )
         assert result == {"cmd": "step2"}
 
     async def test_before_tool_execute_deny_default_reason(self):

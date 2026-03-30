@@ -832,7 +832,6 @@ class TestCreateDeepAgentTeams:
         toolset_ids = [getattr(t, "_id", "") for t in agent.toolsets]
         assert "deep-team" in toolset_ids
 
-
     def test_include_teams_with_subagents_wires_registry(self):
         """include_teams=True with include_subagents=True wires the registry."""
         agent = _minimal_agent(

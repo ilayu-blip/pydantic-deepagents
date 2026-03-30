@@ -45,9 +45,11 @@ class TestSkillsCapability:
 
     @pytest.mark.anyio
     async def test_agent_integration(self):
-        cap = SkillsCapability(skills=[
-            Skill(name="test", description="test skill", content="test"),
-        ])
+        cap = SkillsCapability(
+            skills=[
+                Skill(name="test", description="test skill", content="test"),
+            ]
+        )
         agent = Agent(_MODEL, capabilities=[cap])
         result = await agent.run("Hello")
         assert result.output is not None
@@ -121,11 +123,16 @@ class TestCapabilityComposition:
     @pytest.mark.anyio
     async def test_multiple_capabilities(self):
         """Multiple capabilities compose without errors."""
-        agent = Agent(_MODEL, capabilities=[
-            SkillsCapability(skills=[
-                Skill(name="test", description="test", content="test"),
-            ]),
-        ])
+        agent = Agent(
+            _MODEL,
+            capabilities=[
+                SkillsCapability(
+                    skills=[
+                        Skill(name="test", description="test", content="test"),
+                    ]
+                ),
+            ],
+        )
         result = await agent.run("Hello")
         assert result.output is not None
 

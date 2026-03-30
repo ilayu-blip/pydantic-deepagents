@@ -463,8 +463,11 @@ class TestCheckpointMiddleware:
         await mw.before_model_request(_cp_ctx(), rc)
         assert await store.count() == 0
         result = await mw.after_tool_execute(
-            _cp_ctx(), call=_cp_call("write_file"),
-            tool_def=_cp_td("write_file"), args={"path": "/test"}, result="ok",
+            _cp_ctx(),
+            call=_cp_call("write_file"),
+            tool_def=_cp_td("write_file"),
+            args={"path": "/test"},
+            result="ok",
         )
         assert result == "ok"
         assert await store.count() == 1
@@ -479,8 +482,11 @@ class TestCheckpointMiddleware:
         msgs = _make_messages(2)
         await mw.before_model_request(_cp_ctx(), _FakeRequestContext(msgs))
         await mw.after_tool_execute(
-            _cp_ctx(), call=_cp_call("write_file"),
-            tool_def=_cp_td("write_file"), args={}, result="ok",
+            _cp_ctx(),
+            call=_cp_call("write_file"),
+            tool_def=_cp_td("write_file"),
+            args={},
+            result="ok",
         )
         assert await store.count() == 0
 
@@ -528,8 +534,11 @@ class TestCheckpointMiddleware:
         mw = CheckpointMiddleware(frequency="every_tool")
         mw._latest_messages = _make_messages(1)
         result = await mw.after_tool_execute(
-            _cp_ctx(), call=_cp_call("test"),
-            tool_def=_cp_td("test"), args={}, result="ok",
+            _cp_ctx(),
+            call=_cp_call("test"),
+            tool_def=_cp_td("test"),
+            args={},
+            result="ok",
         )
         assert result == "ok"
 
@@ -539,8 +548,11 @@ class TestCheckpointMiddleware:
         mw = CheckpointMiddleware(store=store, frequency="every_tool")
         mw._latest_messages = []
         result = await mw.after_tool_execute(
-            _cp_ctx(), call=_cp_call("test"),
-            tool_def=_cp_td("test"), args={}, result={"data": 42},
+            _cp_ctx(),
+            call=_cp_call("test"),
+            tool_def=_cp_td("test"),
+            args={},
+            result={"data": 42},
         )
         assert result == {"data": 42}
 

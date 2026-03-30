@@ -225,10 +225,21 @@ class DeepAgent:
         """
         # Separate non-serializable overrides from spec-compatible ones
         non_spec_keys = {
-            "backend", "tools", "toolsets", "skills", "hooks",
-            "on_context_update", "on_before_compress", "on_after_compress",
-            "on_eviction", "on_cost_update", "middleware", "checkpoint_store",
-            "subagent_registry", "subagent_extra_toolsets", "history_processors",
+            "backend",
+            "tools",
+            "toolsets",
+            "skills",
+            "hooks",
+            "on_context_update",
+            "on_before_compress",
+            "on_after_compress",
+            "on_eviction",
+            "on_cost_update",
+            "middleware",
+            "checkpoint_store",
+            "subagent_registry",
+            "subagent_extra_toolsets",
+            "history_processors",
             "output_type",
         }
 
@@ -239,7 +250,9 @@ class DeepAgent:
         for k, v in overrides.items():
             if k in non_spec_keys or k not in spec_fields:
                 passthrough[k] = v
-            elif k in spec_fields and not isinstance(v, (str, int, float, bool, list, dict, type(None))):
+            elif k in spec_fields and not isinstance(
+                v, (str, int, float, bool, list, dict, type(None))
+            ):
                 # Non-serializable value for a spec field (e.g., model=TestModel())
                 passthrough[k] = v
             else:
@@ -285,10 +298,7 @@ class DeepAgent:
             ```
         """
         # Filter to spec-compatible keys only
-        spec = DeepAgentSpec(**{
-            k: v for k, v in params.items()
-            if k in DeepAgentSpec.model_fields
-        })
+        spec = DeepAgentSpec(**{k: v for k, v in params.items() if k in DeepAgentSpec.model_fields})
 
         data = spec.model_dump(exclude_defaults=True)
 
