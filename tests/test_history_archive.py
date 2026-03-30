@@ -28,7 +28,6 @@ from pydantic_deep.processors.history_archive import (
     create_history_search_toolset,
 )
 
-
 _TS = datetime(2024, 1, 1, tzinfo=timezone.utc)
 
 

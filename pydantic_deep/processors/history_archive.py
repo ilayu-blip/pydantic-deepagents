@@ -37,7 +37,6 @@ from pydantic_ai.messages import (
 )
 from pydantic_ai.toolsets import FunctionToolset
 
-
 SEARCH_HISTORY_DESCRIPTION = """\
 Search through the full conversation history, including messages that \
 were compressed away to save context space.

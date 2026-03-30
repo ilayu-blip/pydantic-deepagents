@@ -7,8 +7,12 @@ from dataclasses import dataclass
 from typing import Any
 
 import pytest
-from pydantic_ai import Agent
+from pydantic_ai import Agent, RunContext
+from pydantic_ai.exceptions import ModelRetry
+from pydantic_ai.messages import ToolCallPart
 from pydantic_ai.models.test import TestModel
+from pydantic_ai.tools import ToolDefinition
+from pydantic_ai.usage import RunUsage
 from pydantic_ai_backends import ExecuteResponse, SandboxProtocol, StateBackend
 
 from pydantic_deep import DeepAgentDeps, create_deep_agent
@@ -29,12 +33,6 @@ from pydantic_deep.capabilities.hooks import (
     _run_background_hook,
     _run_hook,
 )
-
-from pydantic_ai import RunContext
-from pydantic_ai.exceptions import ModelRetry
-from pydantic_ai.messages import ToolCallPart
-from pydantic_ai.tools import ToolDefinition
-from pydantic_ai.usage import RunUsage
 
 TEST_MODEL = TestModel()
 
@@ -781,8 +779,7 @@ class TestCreateDeepAgentWithHooks:
         from pydantic_ai.capabilities import AbstractCapability
 
         class MyCapability(AbstractCapability[DeepAgentDeps]):  # type: ignore[misc]
-            async def before_run(self, ctx):
-                return prompt
+            pass
 
         async def handler(hi: HookInput) -> HookResult:
             return HookResult()  # pragma: no cover

@@ -316,7 +316,6 @@ async def _save_and_prune(
 
 from dataclasses import dataclass, field as dataclass_field  # noqa: E402
 
-from pydantic_ai import RunContext  # noqa: E402
 from pydantic_ai.capabilities import AbstractCapability  # noqa: E402
 from pydantic_ai.messages import ToolCallPart  # noqa: E402
 from pydantic_ai.tools import ToolDefinition  # noqa: E402

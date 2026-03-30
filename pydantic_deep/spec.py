@@ -303,10 +303,7 @@ class DeepAgent:
         data = spec.model_dump(exclude_defaults=True)
 
         file_path = Path(path)
-        if file_path.suffix == ".json":
-            content = json.dumps(data, indent=2)
-        else:
-            content = _dump_yaml(data)
+        content = json.dumps(data, indent=2) if file_path.suffix == ".json" else _dump_yaml(data)
 
         file_path.write_text(content, encoding="utf-8")
 

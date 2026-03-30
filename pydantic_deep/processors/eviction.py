@@ -163,7 +163,10 @@ class EvictionProcessor:
     """Number of lines from the end to include in the preview."""
 
     on_eviction: Callable[[str, str, int, int], Any] | None = None
-    """Callback when tool output is evicted: (tool_name, file_path, original_chars, preview_chars)."""
+    """Callback when tool output is evicted.
+
+    Called with (tool_name, file_path, original_chars, preview_chars).
+    """
 
     _evicted_ids: set[str] = field(default_factory=set, repr=False)
     """Tracks tool_call_ids that have already been evicted to prevent re-eviction."""

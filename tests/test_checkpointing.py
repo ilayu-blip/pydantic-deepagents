@@ -6,16 +6,16 @@ from datetime import datetime, timezone
 from typing import Any
 
 import pytest
+from pydantic_ai import RunContext
 from pydantic_ai.messages import (
     ModelMessage,
     ModelRequest,
     ModelResponse,
     TextPart,
+    ToolCallPart,
     UserPromptPart,
 )
 from pydantic_ai.models.test import TestModel
-from pydantic_ai import RunContext
-from pydantic_ai.messages import ToolCallPart
 from pydantic_ai.tools import ToolDefinition
 from pydantic_ai.usage import RunUsage
 

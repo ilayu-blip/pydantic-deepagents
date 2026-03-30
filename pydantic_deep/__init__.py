@@ -88,8 +88,6 @@ from pydantic_ai_summarization import (
 )
 
 from pydantic_deep.agent import create_deep_agent, create_default_deps, run_with_files
-from pydantic_deep.deps import DeepAgentDeps
-from pydantic_deep.spec import DeepAgent, DeepAgentSpec
 from pydantic_deep.capabilities import (
     ContextFilesCapability,
     MemoryCapability,
@@ -106,6 +104,7 @@ from pydantic_deep.capabilities.hooks import (
     HookResult,
     HooksCapability,
 )
+from pydantic_deep.deps import DeepAgentDeps
 from pydantic_deep.processors.eviction import (
     DEFAULT_EVICTION_PATH,
     DEFAULT_TOKEN_LIMIT,
@@ -117,6 +116,7 @@ from pydantic_deep.processors.eviction import (
 )
 from pydantic_deep.processors.patch import CANCELLED_MESSAGE, patch_tool_calls_processor
 from pydantic_deep.prompts import BASE_PROMPT
+from pydantic_deep.spec import DeepAgent, DeepAgentSpec
 from pydantic_deep.styles import (
     BUILTIN_STYLES,
     OutputStyle,
