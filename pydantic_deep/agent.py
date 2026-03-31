@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, TypeVar, overload
 
 from pydantic_ai import Agent
 from pydantic_ai._agent_graph import HistoryProcessor
+from pydantic_ai.capabilities import AbstractCapability
 from pydantic_ai.models import Model
 from pydantic_ai.output import OutputSpec
 from pydantic_ai.tools import DeferredToolRequests, Tool
@@ -72,6 +73,7 @@ def create_deep_agent(
     styles_dir: str | list[str] | None = None,
     tools: Sequence[Tool[DeepAgentDeps] | Any] | None = None,
     toolsets: Sequence[AbstractToolset[DeepAgentDeps]] | None = None,
+    capabilities: Sequence[AbstractCapability[Any]] | None = None,
     subagents: list[SubAgentConfig] | None = None,
     skills: list[Skill] | None = None,
     skill_directories: list[dict[str, Any]]
@@ -136,6 +138,7 @@ def create_deep_agent(
     styles_dir: str | list[str] | None = None,
     tools: Sequence[Tool[DeepAgentDeps] | Any] | None = None,
     toolsets: Sequence[AbstractToolset[DeepAgentDeps]] | None = None,
+    capabilities: Sequence[AbstractCapability[Any]] | None = None,
     subagents: list[SubAgentConfig] | None = None,
     skills: list[Skill] | None = None,
     skill_directories: list[dict[str, Any]]
@@ -200,6 +203,7 @@ def create_deep_agent(  # noqa: C901
     styles_dir: str | list[str] | None = None,
     tools: Sequence[Tool[DeepAgentDeps] | Any] | None = None,
     toolsets: Sequence[AbstractToolset[DeepAgentDeps]] | None = None,
+    capabilities: Sequence[AbstractCapability[Any]] | None = None,
     subagents: list[SubAgentConfig] | None = None,
     skills: list[Skill] | None = None,
     skill_directories: list[dict[str, Any]]
@@ -278,6 +282,7 @@ def create_deep_agent(  # noqa: C901
             YAML frontmatter (name, description) in the directory root.
         tools: Additional tools to register.
         toolsets: Additional toolsets to register.
+        capabilities: Additional capabilities to register.
         subagents: Subagent configurations for the task tool.
         skills: Pre-loaded skills to make available (new Skill dataclass instances).
         skill_directories: Directories to discover skills from.
@@ -875,6 +880,10 @@ def create_deep_agent(  # noqa: C901
 
         all_capabilities.append(WebSearch())
         all_capabilities.append(WebFetch())
+
+    # Add user-provided capabilities
+    if capabilities:
+        all_capabilities.extend(capabilities)
 
     if all_capabilities:
         agent_create_kwargs["capabilities"] = all_capabilities
