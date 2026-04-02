@@ -583,8 +583,6 @@ def create_deep_agent(  # noqa: C901
             if sa_config.get("agent") is None and sa_config.get("agent_factory") is None:
                 sa_config["agent_factory"] = _default_deep_agent_factory
 
-
-
         # Inject per-subagent ContextToolset for configs with context_files
         if effective_subagents:  # pragma: no branch
             from pydantic_deep.toolsets.context import ContextToolset as _PerSubagentCtx

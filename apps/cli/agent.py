@@ -191,7 +191,9 @@ def create_cli_agent(  # noqa: C901
         interrupt_on: dict[str, bool] | None = {"execute": False}
     else:
         # Build interrupt_on from config.approve_tools
-        interrupt_on = {tool: True for tool in config.approve_tools} if config.approve_tools else None
+        interrupt_on = (
+            {tool: True for tool in config.approve_tools} if config.approve_tools else None
+        )
 
     effective_memory = include_memory and not non_interactive
     effective_skills = include_skills if not lean else False  # Lean: no skills noise

@@ -571,7 +571,11 @@ def create_agent() -> Agent[DeepAgentDeps, str]:
     agent_registry = DynamicAgentRegistry()
     factory_toolset = create_agent_factory_toolset(
         registry=agent_registry,
-        allowed_models=["anthropic:claude-sonnet-4-6", "anthropic:claude-haiku-4-5-20251001", "anthropic:claude-haiku-4-5-20251001"],
+        allowed_models=[
+            "anthropic:claude-sonnet-4-6",
+            "anthropic:claude-haiku-4-5-20251001",
+            "anthropic:claude-haiku-4-5-20251001",
+        ],
         default_model="anthropic:claude-haiku-4-5-20251001",
         max_agents=5,
         id="agent-factory",

@@ -141,7 +141,9 @@ def validate_config(config: CliConfig) -> list[str]:
     """Validate config values, returning a list of warning messages."""
     warnings: list[str] = []
     if config.model and ":" not in config.model:
-        warnings.append(f"Model '{config.model}' missing provider prefix (e.g. 'anthropic:claude-sonnet-4-6')")
+        warnings.append(
+            f"Model '{config.model}' missing provider prefix (e.g. 'anthropic:claude-sonnet-4-6')"
+        )
     if config.working_dir:
         from pathlib import Path as _Path
 

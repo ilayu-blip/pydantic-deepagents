@@ -414,9 +414,7 @@ class HooksCapability(AbstractCapability[Any]):
             else:
                 await _run_hook(hook, hook_input, backend)
 
-    async def before_model_request(
-        self, ctx: RunContext[Any], request_context: Any
-    ) -> Any:
+    async def before_model_request(self, ctx: RunContext[Any], request_context: Any) -> Any:
         """Run BEFORE_MODEL_REQUEST hooks before each LLM call."""
         matched = [h for h in self.hooks if h.event == HookEvent.BEFORE_MODEL_REQUEST]
         if not matched:

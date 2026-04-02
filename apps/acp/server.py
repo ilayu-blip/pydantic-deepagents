@@ -95,17 +95,15 @@ class DeepAgentACP(ACPAgent):
     _conn: Client
 
     def __init__(
-            self,
-            agent: Agent[DeepAgentDeps, str]
-                   | Callable[[AgentSessionContext], Agent[DeepAgentDeps, str]],
-            *,
-            models: list[dict[str, str]] | None = None,
+        self,
+        agent: Agent[DeepAgentDeps, str]
+        | Callable[[AgentSessionContext], Agent[DeepAgentDeps, str]],
+        *,
+        models: list[dict[str, str]] | None = None,
     ) -> None:
         super().__init__()
         self._agent_factory = agent
-        self._agent: Agent[DeepAgentDeps, str] | None = (
-            agent if isinstance(agent, Agent) else None
-        )
+        self._agent: Agent[DeepAgentDeps, str] | None = agent if isinstance(agent, Agent) else None
         self._models = models
 
         # Per-session state
@@ -119,9 +117,7 @@ class DeepAgentACP(ACPAgent):
         """Store the client connection."""
         self._conn = conn
 
-    def _get_or_create_agent(
-            self, session_id: str
-    ) -> Agent[DeepAgentDeps, str]:
+    def _get_or_create_agent(self, session_id: str) -> Agent[DeepAgentDeps, str]:
         """Get or create agent for a session."""
         if self._agent is not None:
             return self._agent
@@ -146,9 +142,7 @@ class DeepAgentACP(ACPAgent):
         config_options: list[SessionConfigOptionSelect] = []
 
         if self._models:
-            current_model = self._session_models.get(
-                session_id, self._models[0]["value"]
-            )
+            current_model = self._session_models.get(session_id, self._models[0]["value"])
             model_options = [
                 SessionConfigSelectOption(
                     value=m["value"],
@@ -174,10 +168,10 @@ class DeepAgentACP(ACPAgent):
     # ── ACP Protocol Methods ─────────────────────────────────────────
 
     async def initialize(
-            self,
-            protocol_version: int,
-            client_capabilities: ClientCapabilities,
-            client_info: Implementation | None = None,
+        self,
+        protocol_version: int,
+        client_capabilities: ClientCapabilities,
+        client_info: Implementation | None = None,
     ) -> InitializeResponse:
         """Handle ACP initialize request."""
         return InitializeResponse(
@@ -194,10 +188,10 @@ class DeepAgentACP(ACPAgent):
         )
 
     async def new_session(
-            self,
-            cwd: str,
-            mcp_servers: list[Any] | None = None,
-            **kwargs: Any,
+        self,
+        cwd: str,
+        mcp_servers: list[Any] | None = None,
+        **kwargs: Any,
     ) -> NewSessionResponse:
         """Create a new ACP session."""
         session_id = uuid4().hex[:12]
@@ -212,20 +206,20 @@ class DeepAgentACP(ACPAgent):
         )
 
     async def set_session_mode(
-            self,
-            mode_id: str,
-            session_id: str,
-            **kwargs: Any,
+        self,
+        mode_id: str,
+        session_id: str,
+        **kwargs: Any,
     ) -> SetSessionModeResponse:
         """Handle mode change."""
         return SetSessionModeResponse()
 
     async def set_config_option(
-            self,
-            config_id: str,
-            session_id: str,
-            value: str | bool,
-            **kwargs: Any,
+        self,
+        config_id: str,
+        session_id: str,
+        value: str | bool,
+        **kwargs: Any,
     ) -> SetSessionConfigOptionResponse:
         """Handle config option change (model switch)."""
         if config_id == "model" and isinstance(value, str):
@@ -239,10 +233,10 @@ class DeepAgentACP(ACPAgent):
         )
 
     async def set_session_model(
-            self,
-            model_id: str,
-            session_id: str,
-            **kwargs: Any,
+        self,
+        model_id: str,
+        session_id: str,
+        **kwargs: Any,
     ) -> Any:
         """Handle model switch."""
         self._session_models[session_id] = model_id
@@ -255,11 +249,11 @@ class DeepAgentACP(ACPAgent):
         self._cancelled = True
 
     async def prompt(
-            self,
-            prompt: list[Any],
-            session_id: str,
-            message_id: str | None = None,
-            **kwargs: Any,
+        self,
+        prompt: list[Any],
+        session_id: str,
+        message_id: str | None = None,
+        **kwargs: Any,
     ) -> PromptResponse:
         """Handle a user prompt — run the agent and stream results."""
         self._cancelled = False
@@ -293,9 +287,9 @@ class DeepAgentACP(ACPAgent):
             active_tool_calls: set[str] = set()
 
             async with agent.iter(
-                    user_text,
-                    deps=deps,
-                    message_history=history,
+                user_text,
+                deps=deps,
+                message_history=history,
             ) as run:
                 async for node in run:
                     if self._cancelled:
@@ -308,7 +302,7 @@ class DeepAgentACP(ACPAgent):
                             final_result_found = False
                             async for event in request_stream:
                                 if hasattr(event, "part") and isinstance(
-                                        getattr(event, "part", None), ToolCallPart
+                                    getattr(event, "part", None), ToolCallPart
                                 ):
                                     tc = event.part
                                     if tc.tool_call_id not in active_tool_calls:
@@ -344,9 +338,7 @@ class DeepAgentACP(ACPAgent):
                                 async for cumulative_text in request_stream.stream_text():
                                     delta = cumulative_text[prev_len:]
                                     if delta:
-                                        await send(
-                                            update_agent_message_text(delta)
-                                        )
+                                        await send(update_agent_message_text(delta))
                                     prev_len = len(cumulative_text)
 
                     # CallToolsNode: execute tools and send results
@@ -364,9 +356,9 @@ class DeepAgentACP(ACPAgent):
                                         update_tool_call(
                                             tool_call_id=r.tool_call_id,
                                             status="completed",
-                                            content=[
-                                                tool_content(text_block(content_str))
-                                            ] if content_str else None,
+                                            content=[tool_content(text_block(content_str))]
+                                            if content_str
+                                            else None,
                                         )
                                     )
 

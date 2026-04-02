@@ -103,7 +103,7 @@ def _save_env_key(env_var: str, value: str) -> Path:
     existing[env_var] = value
 
     # Write back
-    lines = [f'{k}={v}' for k, v in sorted(existing.items())]
+    lines = [f"{k}={v}" for k, v in sorted(existing.items())]
     env_path.write_text("\n".join(lines) + "\n")
 
     # Also set in current process
@@ -172,7 +172,9 @@ def run_provider_setup(console: Console, theme: Any) -> str | None:
         )
     else:
         # Ask for API key
-        console.print(f"\n[{theme.muted}]Enter your {provider['name']} API key ({provider['key_hint']}):[/{theme.muted}]")
+        console.print(
+            f"\n[{theme.muted}]Enter your {provider['name']} API key ({provider['key_hint']}):[/{theme.muted}]"
+        )
         try:
             key = input("> ").strip()
         except (EOFError, KeyboardInterrupt):
@@ -188,10 +190,16 @@ def run_provider_setup(console: Console, theme: Any) -> str | None:
     # Pick model
     console.print(f"\n[{theme.muted}]Available models:[/{theme.muted}]")
     for i, (model_id, desc) in enumerate(provider["models"], 1):
-        default_tag = f" [{theme.accent}]default[/{theme.accent}]" if model_id == provider["default_model"] else ""
+        default_tag = (
+            f" [{theme.accent}]default[/{theme.accent}]"
+            if model_id == provider["default_model"]
+            else ""
+        )
         console.print(f"  {i}. {desc} ({model_id}){default_tag}")
 
-    console.print(f"\n[{theme.muted}]Press Enter for default ({provider['default_model']}):[/{theme.muted}]")
+    console.print(
+        f"\n[{theme.muted}]Press Enter for default ({provider['default_model']}):[/{theme.muted}]"
+    )
     try:
         model_choice = input("> ").strip()
     except (EOFError, KeyboardInterrupt):

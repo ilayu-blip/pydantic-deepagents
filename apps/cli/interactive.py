@@ -650,9 +650,7 @@ def _cmd_config(arg: str) -> None:
 
     parts = arg.split(maxsplit=2)
     if parts[0] != "set" or len(parts) < 3:
-        console.print(
-            f"[{theme.muted}]Usage: /config set <key> <value>[/{theme.muted}]"
-        )
+        console.print(f"[{theme.muted}]Usage: /config set <key> <value>[/{theme.muted}]")
         return
 
     key, value = parts[1], parts[2]
