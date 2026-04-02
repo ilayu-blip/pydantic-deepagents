@@ -879,9 +879,7 @@ class TestRunAndModelHooks:
             calls.append("model_req")
             return HookResult()
 
-        cap = HooksCapability(
-            hooks=[Hook(event=HookEvent.BEFORE_MODEL_REQUEST, handler=on_req)]
-        )
+        cap = HooksCapability(hooks=[Hook(event=HookEvent.BEFORE_MODEL_REQUEST, handler=on_req)])
         ctx = _ctx(DeepAgentDeps(backend=StateBackend()))
         result = await cap.before_model_request(ctx, request_context="ctx_obj")
         assert result == "ctx_obj"
@@ -900,9 +898,7 @@ class TestRunAndModelHooks:
             calls.append("model_resp")
             return HookResult()
 
-        cap = HooksCapability(
-            hooks=[Hook(event=HookEvent.AFTER_MODEL_REQUEST, handler=on_resp)]
-        )
+        cap = HooksCapability(hooks=[Hook(event=HookEvent.AFTER_MODEL_REQUEST, handler=on_resp)])
         ctx = _ctx(DeepAgentDeps(backend=StateBackend()))
         await cap.after_model_request(ctx, response="resp_obj")
         assert calls == ["model_resp"]
@@ -919,9 +915,7 @@ class TestRunAndModelHooks:
             calls.append("bg_after")
             return HookResult()
 
-        cap = HooksCapability(
-            hooks=[Hook(event=HookEvent.AFTER_RUN, handler=bg, background=True)]
-        )
+        cap = HooksCapability(hooks=[Hook(event=HookEvent.AFTER_RUN, handler=bg, background=True)])
         ctx = _ctx(DeepAgentDeps(backend=StateBackend()))
         await cap.after_run(ctx, output="x")
         await asyncio.sleep(0.05)
@@ -934,9 +928,7 @@ class TestRunAndModelHooks:
             calls.append("bg_err")
             return HookResult()
 
-        cap = HooksCapability(
-            hooks=[Hook(event=HookEvent.RUN_ERROR, handler=bg, background=True)]
-        )
+        cap = HooksCapability(hooks=[Hook(event=HookEvent.RUN_ERROR, handler=bg, background=True)])
         ctx = _ctx(DeepAgentDeps(backend=StateBackend()))
         await cap.on_run_error(ctx, error=ValueError("x"))
         await asyncio.sleep(0.05)

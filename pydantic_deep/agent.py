@@ -580,7 +580,9 @@ def create_deep_agent(  # noqa: C901
 
         # Inject agent_factory on subagents that don't have one already
         for sa_config in effective_subagents:
-            if sa_config.get("agent") is None and sa_config.get("agent_factory") is None:  # pragma: no branch
+            if (
+                sa_config.get("agent") is None and sa_config.get("agent_factory") is None
+            ):  # pragma: no branch
                 sa_config["agent_factory"] = _default_deep_agent_factory
 
         # Inject per-subagent ContextToolset for configs with context_files
