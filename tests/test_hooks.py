@@ -847,13 +847,13 @@ class TestRunAndModelHooks:
 
         cap = HooksCapability(hooks=[Hook(event=HookEvent.AFTER_RUN, handler=on_end)])
         ctx = _ctx(DeepAgentDeps(backend=StateBackend()))
-        await cap.after_run(ctx, output="done")
+        await cap.after_run(ctx, result="done")
         assert calls == ["end:done"]
 
     async def test_after_run_no_hooks(self) -> None:
         cap = HooksCapability(hooks=[])
         ctx = _ctx(DeepAgentDeps(backend=StateBackend()))
-        await cap.after_run(ctx, output="x")
+        await cap.after_run(ctx, result="x")
 
     async def test_run_error_handler(self) -> None:
         calls: list[str] = []
@@ -864,13 +864,15 @@ class TestRunAndModelHooks:
 
         cap = HooksCapability(hooks=[Hook(event=HookEvent.RUN_ERROR, handler=on_err)])
         ctx = _ctx(DeepAgentDeps(backend=StateBackend()))
-        await cap.on_run_error(ctx, error=ValueError("boom"))
+        with pytest.raises(ValueError, match="boom"):
+            await cap.on_run_error(ctx, error=ValueError("boom"))
         assert calls == ["err:boom"]
 
     async def test_run_error_no_hooks(self) -> None:
         cap = HooksCapability(hooks=[])
         ctx = _ctx(DeepAgentDeps(backend=StateBackend()))
-        await cap.on_run_error(ctx, error=ValueError("x"))
+        with pytest.raises(ValueError):
+            await cap.on_run_error(ctx, error=ValueError("x"))
 
     async def test_before_model_request_handler(self) -> None:
         calls: list[str] = []
@@ -900,13 +902,13 @@ class TestRunAndModelHooks:
 
         cap = HooksCapability(hooks=[Hook(event=HookEvent.AFTER_MODEL_REQUEST, handler=on_resp)])
         ctx = _ctx(DeepAgentDeps(backend=StateBackend()))
-        await cap.after_model_request(ctx, response="resp_obj")
+        await cap.after_model_request(ctx, request_context="x", response="resp_obj")
         assert calls == ["model_resp"]
 
     async def test_after_model_request_no_hooks(self) -> None:
         cap = HooksCapability(hooks=[])
         ctx = _ctx(DeepAgentDeps(backend=StateBackend()))
-        await cap.after_model_request(ctx, response="x")
+        await cap.after_model_request(ctx, request_context="x", response="x")
 
     async def test_after_run_background(self) -> None:
         calls: list[str] = []
@@ -917,7 +919,7 @@ class TestRunAndModelHooks:
 
         cap = HooksCapability(hooks=[Hook(event=HookEvent.AFTER_RUN, handler=bg, background=True)])
         ctx = _ctx(DeepAgentDeps(backend=StateBackend()))
-        await cap.after_run(ctx, output="x")
+        await cap.after_run(ctx, result="x")
         await asyncio.sleep(0.05)
         assert calls == ["bg_after"]
 
@@ -930,7 +932,8 @@ class TestRunAndModelHooks:
 
         cap = HooksCapability(hooks=[Hook(event=HookEvent.RUN_ERROR, handler=bg, background=True)])
         ctx = _ctx(DeepAgentDeps(backend=StateBackend()))
-        await cap.on_run_error(ctx, error=ValueError("x"))
+        with pytest.raises(ValueError):
+            await cap.on_run_error(ctx, error=ValueError("x"))
         await asyncio.sleep(0.05)
         assert calls == ["bg_err"]
 
@@ -960,7 +963,7 @@ class TestRunAndModelHooks:
             hooks=[Hook(event=HookEvent.AFTER_MODEL_REQUEST, handler=bg, background=True)]
         )
         ctx = _ctx(DeepAgentDeps(backend=StateBackend()))
-        await cap.after_model_request(ctx, response="x")
+        await cap.after_model_request(ctx, request_context="x", response="x")
         await asyncio.sleep(0.05)
         assert calls == ["bg_resp"]
 
