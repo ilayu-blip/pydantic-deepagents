@@ -215,9 +215,7 @@ class AgentMemoryToolset(FunctionToolset[Any]):
             line_count = len(updated.splitlines())
             return f"Memory updated ({line_count} lines total)."
 
-    async def get_instructions(
-        self, ctx: RunContext[Any]
-    ) -> list[InstructionPart] | None:
+    async def get_instructions(self, ctx: RunContext[Any]) -> list[InstructionPart] | None:
         """Load and inject memory into system prompt.
 
         Args:
