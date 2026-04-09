@@ -468,7 +468,7 @@ class TestGetInstructions:
         toolset = SkillsToolset(skills=[skill])
         result = await toolset.get_instructions(ctx=None)
         assert result is not None
-        joined = "\n\n".join(result)
+        joined = "\n\n".join(p.content for p in result)
         assert "<name>test</name>" in joined
         assert "<description>desc</description>" in joined
 
@@ -480,7 +480,7 @@ class TestGetInstructions:
         )
         result = await toolset.get_instructions(ctx=None)
         assert result is not None
-        assert result[0].startswith("Custom:")
+        assert result[0].content.startswith("Custom:")
 
     async def test_with_uri_not_exposed(self) -> None:
         """URI is NOT exposed in system prompt to prevent sandbox confusion."""
@@ -488,7 +488,7 @@ class TestGetInstructions:
         toolset = SkillsToolset(skills=[skill])
         result = await toolset.get_instructions(ctx=None)
         assert result is not None
-        joined = "\n\n".join(result)
+        joined = "\n\n".join(p.content for p in result)
         assert "<uri>" not in joined
         assert "<name>test</name>" in joined
 

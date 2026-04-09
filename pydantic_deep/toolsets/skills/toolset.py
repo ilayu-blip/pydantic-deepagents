@@ -22,6 +22,7 @@ from typing import Any
 
 from pydantic_ai._griffe import doc_descriptions
 from pydantic_ai._run_context import RunContext
+from pydantic_ai.messages import InstructionPart
 from pydantic_ai.toolsets import FunctionToolset
 
 from .backend import BackendSkillsDirectory
@@ -456,7 +457,9 @@ class SkillsToolset(FunctionToolset):
 
             return str(await script.run(ctx=ctx, args=args))
 
-    async def get_instructions(self, ctx: RunContext[Any]) -> list[str] | None:
+    async def get_instructions(
+        self, ctx: RunContext[Any]
+    ) -> list[InstructionPart] | None:
         """Return instructions to inject into the agent's system prompt.
 
         Args:
@@ -478,9 +481,11 @@ class SkillsToolset(FunctionToolset):
         skills_list = "\n".join(skills_list_lines)
 
         if self._instruction_template:
-            return [self._instruction_template.format(skills_list=skills_list)]
+            content = self._instruction_template.format(skills_list=skills_list)
+            return [InstructionPart(content=content, dynamic=True)]
 
-        return [_INSTRUCTION_SKILLS_HEADER.format(skills_list=skills_list)]
+        content = _INSTRUCTION_SKILLS_HEADER.format(skills_list=skills_list)
+        return [InstructionPart(content=content, dynamic=True)]
 
     def skill(
         self,
