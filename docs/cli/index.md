@@ -234,7 +234,7 @@ Per-session debug logs are saved to `.pydantic-deep/logs/`:
 └── latest.log             # Symlink to current session
 ```
 
-Logs include agent lifecycle events, tool calls with timing, command dispatches, and errors with tracebacks. Last 20 session logs are kept automatically.
+Logs include agent lifecycle events, tool calls with timing, command dispatches, notifications, subagent outputs, and errors with tracebacks. Last 20 session logs are kept automatically. All `app.notify()` calls (errors, warnings, info) are automatically logged.
 
 ## Architecture
 

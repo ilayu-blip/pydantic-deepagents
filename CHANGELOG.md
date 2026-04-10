@@ -18,10 +18,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`create_cli_agent()` feature flags now read from config.toml** — `include_skills`, `include_plan`, `include_memory`, `include_subagents`, `include_todo`, `context_discovery`, `web_search`, `web_fetch`, `thinking`, `include_teams`, and `temperature` all default to `None` (= read from config). Previously hardcoded to `True`, ignoring config.toml values. Explicit parameters still override config
 - **Headless runner uses same defaults as TUI** — `pydantic-deep run` no longer hardcodes `include_plan=False` and `include_memory=False`. All features inherit from config.toml, overridable via CLI flags
 - **Headless runner auto-initializes `.pydantic-deep/`** — `pydantic-deep run` now calls `ensure_initialized()` before creating the agent, ensuring config, skills, and memory scaffolding exist in the working directory
+- **Default model changed to `anthropic:claude-opus-4-6`** — updated in `CliConfig`, `init.py` template, and model picker
+- **Model picker updated** — 25 OpenRouter models (Anthropic, OpenAI, Google, Z-AI, X-AI), refreshed Anthropic/OpenAI/Google direct models
+- **Prompt stack deduplicated** — `BASE_PROMPT` was included twice (framework + CLI layer). CLI prompt now only adds CLI-specific sections (Path Handling, Exactness, Provided Data). Removed redundant "Bias Towards Action", "Avoid Over-Engineering", "Parallel Tool Calls" from CLI layer (already in BASE_PROMPT)
+- **Prompt streamlined** — removed "Executing Actions with Care" section (approve_tools handles this mechanically), merged "Tone and Formatting" + "Progress Updates" into 3-line "Output" section, added 5-step workflow (Research → Understand → Implement → Verify → Retry), strengthened error handling with "NEVER declare done if last test failed"
+- **Directory tree excludes `.pydantic-deep/`** — sessions, logs, and config internals no longer leak into the system prompt tree
+- **TUI: all tool calls now visible** — todo tools (`read_todos`, `write_todos`, `add_todo`, `update_todo_status`, `remove_todo`) are no longer hidden from the UI
+- **TUI: side panel visible by default** — shows on startup when terminal >= 100 chars wide, responsive to resize
+- **TUI: default subagents shown on startup** — side panel lists available subagents (planner, research) with idle status before any delegation occurs
+- **TUI: thinking content displayed** — model thinking/reasoning streamed live as dimmed text, collapsed to summary after completion
+- **TUI: per-turn token usage** — each assistant response shows `in:X · out:Y · total:Z · reqs:N` below the text
+- **TUI: header shows cumulative tokens and cost** — `in:45K out:3K · $0.12` in the top bar after responses
+- **TUI: all notifications logged** — `DeepApp.notify()` override and `notify_error/warning/success` helpers write to per-session log file
+- **TUI: session saved on error** — `_save_session()` moved to `finally` block so `messages.json` is persisted even after agent crashes or cancellation
+- **TUI: subagent output fully logged** — `tool_log.jsonl` stores up to 20K chars for subagent task results (was 2K), debug log includes full output for task tool calls
 
 ### Fixed
 
 - **`ensure_initialized()` now always populates missing scaffolding** — previously only ran `init_project` when `.pydantic-deep/` didn't exist at all. Now always runs idempotent init, so missing built-in skills, config, or memory templates are added to existing directories
+- **`contextlib` scope error in chat.py** — `import contextlib` was inside `except` block but used in `finally`. Moved to top-level import
+- **CostUpdated message routing** — `_on_cost_update` callback now posts to `app.screen` (not `app`), fixing Textual message routing so `ChatScreen.on_cost_updated` actually receives cost/token updates
 
 ## [0.3.4] - 2026-04-09
 
