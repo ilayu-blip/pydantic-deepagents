@@ -39,6 +39,8 @@ async def execute_headless(  # noqa: C901
     sandbox: str | None = None,
     workspace: str | None = None,
     verbose: bool = False,
+    include_browser: bool | None = None,
+    browser_headless: bool | None = None,
 ) -> int:
     """Execute a task in headless mode and print the result.
 
@@ -107,6 +109,10 @@ async def execute_headless(  # noqa: C901
         agent_kwargs["sandbox"] = sandbox
     if workspace is not None:
         agent_kwargs["workspace"] = workspace
+    if include_browser is not None:
+        agent_kwargs["include_browser"] = include_browser
+    if browser_headless is not None:
+        agent_kwargs["browser_headless"] = browser_headless
 
     agent, deps = create_cli_agent(**agent_kwargs)
 

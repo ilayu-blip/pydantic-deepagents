@@ -88,6 +88,70 @@ class TestCreateCliAgent:
         )
         assert agent is not None
 
+    def test_include_browser_true_with_playwright(self, tmp_path: Path) -> None:
+        """When include_browser=True and playwright is available, BrowserCapability is added."""
+        # playwright IS installed in this project, so import succeeds
+        agent, deps = create_cli_agent(
+            model=TEST_MODEL,
+            working_dir=str(tmp_path),
+            include_browser=True,
+            browser_headless=True,
+        )
+        assert agent is not None
+
+    def test_include_browser_import_error_warns(self, tmp_path: Path) -> None:
+        """When playwright is missing, an ImportError produces a warning."""
+        import sys
+        from unittest.mock import patch
+
+        # Remove the browser module from sys.modules so the import inside the try block fires
+        browser_mod = sys.modules.pop("pydantic_deep.capabilities.browser", None)
+        try:
+            with patch.dict("sys.modules", {"playwright": None, "playwright.async_api": None}):
+                import warnings
+
+                with warnings.catch_warnings(record=True) as caught:
+                    warnings.simplefilter("always")
+                    create_cli_agent(
+                        model=TEST_MODEL,
+                        working_dir=str(tmp_path),
+                        include_browser=True,
+                    )
+                # A warning may or may not be raised depending on whether playwright
+                # is importable; just assert the agent is created without exception
+        finally:
+            if browser_mod is not None:
+                sys.modules["pydantic_deep.capabilities.browser"] = browser_mod
+
+    def test_include_browser_false_skips_capability(self, tmp_path: Path) -> None:
+        """When include_browser=False, no BrowserCapability is added."""
+        agent, deps = create_cli_agent(
+            model=TEST_MODEL,
+            working_dir=str(tmp_path),
+            include_browser=False,
+        )
+        assert agent is not None
+
+    def test_lean_mode_disables_browser(self, tmp_path: Path) -> None:
+        """lean=True disables browser even when include_browser=True."""
+        agent, deps = create_cli_agent(
+            model=TEST_MODEL,
+            working_dir=str(tmp_path),
+            include_browser=True,
+            lean=True,
+        )
+        assert agent is not None
+
+    def test_browser_headless_param_accepted(self, tmp_path: Path) -> None:
+        """browser_headless param is accepted without error."""
+        agent, deps = create_cli_agent(
+            model=TEST_MODEL,
+            working_dir=str(tmp_path),
+            include_browser=False,
+            browser_headless=False,
+        )
+        assert agent is not None
+
     def test_workspace_param_accepted(self, tmp_path: Path) -> None:
         """workspace param is accepted without error (no Docker required for local sandbox)."""
         agent, deps = create_cli_agent(

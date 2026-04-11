@@ -219,6 +219,76 @@ class TestExecuteHeadless:
         assert "include_plan" not in call_kwargs
         assert "include_memory" not in call_kwargs
 
+    async def test_browser_flags_forwarded(
+        self, mock_agent: MagicMock, mock_deps: MagicMock
+    ) -> None:
+        with patch(
+            "apps.cli.run.create_cli_agent", return_value=(mock_agent, mock_deps)
+        ) as mock_create:
+            await execute_headless(
+                task="Fix the bug",
+                working_dir="/tmp",
+                include_browser=True,
+                browser_headless=False,
+            )
+
+        call_kwargs = mock_create.call_args.kwargs
+        assert call_kwargs["include_browser"] is True
+        assert call_kwargs["browser_headless"] is False
+
+    async def test_browser_flags_none_not_forwarded(
+        self, mock_agent: MagicMock, mock_deps: MagicMock
+    ) -> None:
+        """When browser params are None, they are not forwarded (use config defaults)."""
+        with patch(
+            "apps.cli.run.create_cli_agent", return_value=(mock_agent, mock_deps)
+        ) as mock_create:
+            await execute_headless(task="Fix the bug", working_dir="/tmp")
+
+        call_kwargs = mock_create.call_args.kwargs
+        assert "include_browser" not in call_kwargs
+        assert "browser_headless" not in call_kwargs
+
+
+class TestRunCommandBrowserFlags:
+    """Tests for --browser/--no-browser CLI flags."""
+
+    def test_browser_flag_forwarded(self) -> None:
+        with patch("apps.cli.run.execute_headless", new_callable=AsyncMock) as mock_exec:
+            mock_exec.return_value = 0
+            result = runner.invoke(app, ["run", "Do something", "--browser"])
+
+        assert result.exit_code == 0
+        call_kwargs = mock_exec.call_args.kwargs
+        assert call_kwargs["include_browser"] is True
+
+    def test_no_browser_flag_forwarded(self) -> None:
+        with patch("apps.cli.run.execute_headless", new_callable=AsyncMock) as mock_exec:
+            mock_exec.return_value = 0
+            result = runner.invoke(app, ["run", "Do something", "--no-browser"])
+
+        assert result.exit_code == 0
+        call_kwargs = mock_exec.call_args.kwargs
+        assert call_kwargs["include_browser"] is False
+
+    def test_browser_headless_flag(self) -> None:
+        with patch("apps.cli.run.execute_headless", new_callable=AsyncMock) as mock_exec:
+            mock_exec.return_value = 0
+            result = runner.invoke(app, ["run", "Do something", "--browser-headless"])
+
+        assert result.exit_code == 0
+        call_kwargs = mock_exec.call_args.kwargs
+        assert call_kwargs["browser_headless"] is True
+
+    def test_browser_headed_flag(self) -> None:
+        with patch("apps.cli.run.execute_headless", new_callable=AsyncMock) as mock_exec:
+            mock_exec.return_value = 0
+            result = runner.invoke(app, ["run", "Do something", "--browser-headed"])
+
+        assert result.exit_code == 0
+        call_kwargs = mock_exec.call_args.kwargs
+        assert call_kwargs["browser_headless"] is False
+
 
 # ── Helper function tests ──────────���───────────────────────────────
 

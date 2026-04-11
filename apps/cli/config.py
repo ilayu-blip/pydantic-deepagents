@@ -61,6 +61,8 @@ _BOOL_FIELDS = frozenset(
         "show_cost",
         "show_tokens",
         "logfire",
+        "include_browser",
+        "browser_headless",
     }
 )
 
@@ -105,6 +107,10 @@ class CliConfig:
     sandbox_image: str = "python:3.12-slim"
     """Docker image used when ``sandbox = "docker"``."""
     logfire: bool = False
+    include_browser: bool = False
+    """Enable browser automation via Playwright (requires ``pydantic-deep[browser]``)."""
+    browser_headless: bool = False
+    """Run browser without a visible window. Default ``False`` — browser window is shown."""
 
 
 def load_config(path: Path | None = None) -> CliConfig:

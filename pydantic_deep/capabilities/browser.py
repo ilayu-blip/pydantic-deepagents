@@ -38,7 +38,7 @@ from pydantic_deep.toolsets.browser import (
 try:
     from playwright.async_api import async_playwright
 except ImportError:  # pragma: no cover
-    async_playwright = None  # type: ignore[assignment,misc]
+    async_playwright = None  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
 
@@ -145,6 +145,7 @@ class BrowserCapability(AbstractCapability[Any]):
         cancelled.
         """
         _require_browser()
+        assert async_playwright is not None  # guaranteed by _require_browser()
         async with async_playwright() as pw:
             browser = await pw.chromium.launch(headless=self.headless)
             page = await browser.new_page()

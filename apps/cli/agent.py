@@ -83,6 +83,8 @@ def create_cli_agent(  # noqa: C901
     thinking: bool | str | None = None,
     include_teams: bool | None = None,
     temperature: float | None = None,
+    include_browser: bool | None = None,
+    browser_headless: bool | None = None,
 ) -> tuple[Any, DeepAgentDeps]:
     """Create a CLI-configured agent with all pydantic-deep capabilities.
 
@@ -248,6 +250,9 @@ def create_cli_agent(  # noqa: C901
     effective_subagents = _subagents if not lean else False
     effective_todo = _todo if not lean else False
 
+    _browser = include_browser if include_browser is not None else config.include_browser
+    effective_browser = _browser if not lean else False
+
     # Model settings — explicit param > model_settings dict > non-interactive > config
     effective_model_settings: dict[str, Any] = {}
     if non_interactive:
@@ -274,6 +279,25 @@ def create_cli_agent(  # noqa: C901
 
         session_dir = get_sessions_dir() / session_id
         session_dir.mkdir(parents=True, exist_ok=True)
+
+    # Build extra capabilities list (browser, future additions)
+    extra_capabilities: list[Any] = []
+    if effective_browser:
+        try:
+            from pydantic_deep.capabilities.browser import BrowserCapability
+
+            effective_headless = (
+                browser_headless if browser_headless is not None else config.browser_headless
+            )
+            extra_capabilities.append(BrowserCapability(headless=effective_headless))
+        except ImportError:
+            import warnings
+
+            warnings.warn(
+                "BrowserCapability requires playwright. "
+                "Install with: pip install 'pydantic-deep[browser]' && playwright install chromium",
+                stacklevel=2,
+            )
 
     agent = create_deep_agent(
         model=effective_model,
@@ -338,6 +362,7 @@ def create_cli_agent(  # noqa: C901
         hooks=hooks or None,
         middleware=middleware or None,
         toolsets=[local_context] if local_context else None,
+        capabilities=extra_capabilities or None,
     )
 
     # Extract context middleware for CLI commands (/compact, /context)

@@ -402,7 +402,7 @@ class BrowserToolset(FunctionToolset[Any]):
             page = self._get_page()
             if selector:
                 try:
-                    return await page.inner_text(selector, timeout=self._timeout_ms)
+                    return str(await page.inner_text(selector, timeout=self._timeout_ms))
                 except Exception as exc:
                     return f"Error getting text from '{selector}': {exc}"
             return await self._page_content_as_markdown()

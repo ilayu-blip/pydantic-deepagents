@@ -69,6 +69,8 @@ All feature flags default from `.pydantic-deep/config.toml` — the same default
 | `--teams` / `--no-teams` | Agent teams (from config) |
 | `--context` / `--no-context` | Auto-discover AGENTS.md/SOUL.md (from config) |
 | `--sandbox`, `-s` | Sandbox backend: `local` or `docker` (from config) |
+| `--browser` / `--no-browser` | Enable Playwright browser automation (from config, requires `pydantic-deep[browser]`) |
+| `--browser-headless` / `--browser-headed` | Run browser hidden or with visible window (default: headed) |
 
 JSON output includes the agent's response and token usage:
 
@@ -286,6 +288,8 @@ web_fetch = true
 approve_tools = ["execute"]
 sandbox = "local"
 sandbox_image = "python:3.12-slim"
+include_browser = false       # opt-in: requires pydantic-deep[browser]
+browser_headless = false      # show browser window (default)
 ```
 
 API keys: `.pydantic-deep/keys.toml` (managed via `/provider` command)

@@ -244,6 +244,20 @@ def run(
         bool,
         typer.Option("--verbose", "-v", help="Stream progress to stderr"),
     ] = False,
+    include_browser: Annotated[
+        bool | None,
+        typer.Option(
+            "--browser/--no-browser",
+            help="Enable Playwright browser automation (default: from config, requires pydantic-deep[browser])",
+        ),
+    ] = None,
+    browser_headless: Annotated[
+        bool | None,
+        typer.Option(
+            "--browser-headless/--browser-headed",
+            help="Browser window mode: headless (hidden) or headed (visible). Default: from config (headed)",
+        ),
+    ] = None,
 ) -> None:
     """Run a task non-interactively (headless mode).
 
@@ -310,6 +324,8 @@ def run(
             sandbox=sandbox,
             workspace=workspace,
             verbose=verbose,
+            include_browser=include_browser,
+            browser_headless=browser_headless,
         )
     )
     raise typer.Exit(result)
