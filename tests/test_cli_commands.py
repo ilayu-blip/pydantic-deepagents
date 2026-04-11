@@ -241,16 +241,20 @@ class TestVersionNotification:
 
     def test_shows_notification_when_update_available(self) -> None:
         upd = UpdateInfo(current="0.1.0", latest="1.0.0")
-        with patch("apps.cli.update.check_for_update", return_value=upd):
-            with patch("apps.cli.config.DEFAULT_CONFIG_PATH", Path("/tmp/nonexistent/config.toml")):
-                result = runner.invoke(app, ["config", "show"])
+        with (
+            patch("apps.cli.update.check_for_update", return_value=upd),
+            patch("apps.cli.config.DEFAULT_CONFIG_PATH", Path("/tmp/nonexistent/config.toml")),
+        ):
+            result = runner.invoke(app, ["config", "show"])
         assert result.exit_code == 0
         assert "Update available" in result.output
         assert "1.0.0" in result.output
 
     def test_no_output_when_up_to_date(self) -> None:
-        with patch("apps.cli.update.check_for_update", return_value=None):
-            with patch("apps.cli.config.DEFAULT_CONFIG_PATH", Path("/tmp/nonexistent/config.toml")):
-                result = runner.invoke(app, ["config", "show"])
+        with (
+            patch("apps.cli.update.check_for_update", return_value=None),
+            patch("apps.cli.config.DEFAULT_CONFIG_PATH", Path("/tmp/nonexistent/config.toml")),
+        ):
+            result = runner.invoke(app, ["config", "show"])
         assert result.exit_code == 0
         assert "Update available" not in result.output

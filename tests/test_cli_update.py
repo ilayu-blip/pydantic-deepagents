@@ -8,8 +8,6 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from apps.cli.update import (
     UpdateInfo,
     _fetch_latest_version,
@@ -21,7 +19,6 @@ from apps.cli.update import (
     check_for_update,
     run_update,
 )
-
 
 # ── _get_cache_path ───────────────────────────────────────────────────────────
 
@@ -184,9 +181,11 @@ class TestCheckForUpdate:
 
     def test_fetches_from_pypi_when_no_cache(self, tmp_path: Path) -> None:
         cache = tmp_path / "update_check.json"
-        with patch("apps.cli.update._fetch_latest_version", return_value="99.0.0"):
-            with patch("pydantic_deep.__version__", "0.1.0"):
-                result = check_for_update(cache)
+        with (
+            patch("apps.cli.update._fetch_latest_version", return_value="99.0.0"),
+            patch("pydantic_deep.__version__", "0.1.0"),
+        ):
+            result = check_for_update(cache)
         assert result is not None
         assert result.latest == "99.0.0"
         # Cache should now be written
@@ -198,9 +197,11 @@ class TestCheckForUpdate:
             assert check_for_update(cache) is None
 
     def test_uses_default_cache_path_when_none_given(self) -> None:
-        with patch("apps.cli.update._load_cache", return_value=None):
-            with patch("apps.cli.update._fetch_latest_version", return_value=None):
-                result = check_for_update()
+        with (
+            patch("apps.cli.update._load_cache", return_value=None),
+            patch("apps.cli.update._fetch_latest_version", return_value=None),
+        ):
+            result = check_for_update()
         assert result is None
 
 
@@ -211,18 +212,22 @@ class TestRunUpdate:
     def test_uses_uv_when_available(self) -> None:
         mock_proc = MagicMock()
         mock_proc.returncode = 0
-        with patch("apps.cli.update._find_uv", return_value="/usr/bin/uv"):
-            with patch("subprocess.run", return_value=mock_proc) as mock_run:
-                code = run_update()
+        with (
+            patch("apps.cli.update._find_uv", return_value="/usr/bin/uv"),
+            patch("subprocess.run", return_value=mock_proc) as mock_run,
+        ):
+            code = run_update()
         assert code == 0
         mock_run.assert_called_once_with(["/usr/bin/uv", "tool", "upgrade", "pydantic-deep"])
 
     def test_falls_back_to_pip_without_uv(self) -> None:
         mock_proc = MagicMock()
         mock_proc.returncode = 0
-        with patch("apps.cli.update._find_uv", return_value=None):
-            with patch("subprocess.run", return_value=mock_proc) as mock_run:
-                code = run_update()
+        with (
+            patch("apps.cli.update._find_uv", return_value=None),
+            patch("subprocess.run", return_value=mock_proc) as mock_run,
+        ):
+            code = run_update()
         assert code == 0
         args = mock_run.call_args[0][0]
         assert args[0] == sys.executable
@@ -232,6 +237,8 @@ class TestRunUpdate:
     def test_propagates_nonzero_exit_code(self) -> None:
         mock_proc = MagicMock()
         mock_proc.returncode = 1
-        with patch("apps.cli.update._find_uv", return_value="/usr/bin/uv"):
-            with patch("subprocess.run", return_value=mock_proc):
-                assert run_update() == 1
+        with (
+            patch("apps.cli.update._find_uv", return_value="/usr/bin/uv"),
+            patch("subprocess.run", return_value=mock_proc),
+        ):
+            assert run_update() == 1
