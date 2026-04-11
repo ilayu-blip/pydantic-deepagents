@@ -16,6 +16,8 @@ from typing import Any
 def run_tui(
     model: str | None = None,
     working_dir: str | Path | None = None,
+    sandbox: str | None = None,
+    workspace: str | None = None,
     **kwargs: Any,
 ) -> None:
     """Launch the Textual TUI.
@@ -103,6 +105,8 @@ def run_tui(
             working_dir=str(working_dir) if working_dir else None,
             on_cost_update=_on_cost_update,
             on_context_update=_on_context_update,
+            sandbox=sandbox,
+            workspace=workspace,
             **kwargs,
         )
     except Exception as exc:
@@ -121,7 +125,12 @@ def run_tui(
         startup_error=startup_error,
     )
     app_ref[0] = app
-    app.run()
+    try:
+        app.run()
+    finally:
+        # Stop Docker container if sandbox backend was used
+        if deps is not None and hasattr(deps.backend, "stop"):
+            deps.backend.stop()
 
 
 def run_preview() -> None:

@@ -10,7 +10,6 @@ specific tool: exactness requirements, coding quality, autonomy rules.
 
 from __future__ import annotations
 
-
 # ── Core CLI section (always included) ──────────────────────────────────
 
 _CLI_CORE = """\

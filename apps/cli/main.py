@@ -115,13 +115,37 @@ def tui(
         str | None,
         typer.Option("--working-dir", "-w", help="Working directory"),
     ] = None,
+    sandbox: Annotated[
+        str | None,
+        typer.Option("--sandbox", "-s", help="Sandbox backend: local or docker (from config)"),
+    ] = None,
+    workspace: Annotated[
+        str | None,
+        typer.Option(
+            "--workspace",
+            help=(
+                "Named Docker workspace shared across threads. "
+                "Packages and state persist between sessions. "
+                "Implies --sandbox docker."
+            ),
+        ),
+    ] = None,
 ) -> None:
     """Launch the Textual-based TUI (rich interactive interface)."""
     from apps.cli.init import ensure_initialized
     from apps.cli.tui import run_tui
 
+    # --workspace implies --sandbox docker
+    if workspace and not sandbox:
+        sandbox = "docker"
+
     ensure_initialized()
-    run_tui(model=model, working_dir=working_dir or os.getcwd())
+    run_tui(
+        model=model,
+        working_dir=working_dir or os.getcwd(),
+        sandbox=sandbox,
+        workspace=workspace,
+    )
 
 
 @app.command()
@@ -201,6 +225,21 @@ def run(
         float | None,
         typer.Option("--temperature", help="Sampling temperature (default: 0.0)"),
     ] = None,
+    sandbox: Annotated[
+        str | None,
+        typer.Option("--sandbox", "-s", help="Sandbox backend: local or docker (from config)"),
+    ] = None,
+    workspace: Annotated[
+        str | None,
+        typer.Option(
+            "--workspace",
+            help=(
+                "Named Docker workspace shared across threads. "
+                "Packages and state persist between sessions. "
+                "Implies --sandbox docker."
+            ),
+        ),
+    ] = None,
     verbose: Annotated[
         bool,
         typer.Option("--verbose", "-v", help="Stream progress to stderr"),
@@ -221,8 +260,14 @@ def run(
         pydantic-deep run "Refactor utils.py" --max-turns 50 --timeout 300
         pydantic-deep run "Research X" --web-search --web-fetch
         pydantic-deep run "Fix bug" --no-web-search --no-web-fetch --thinking false
+        pydantic-deep run "Analyze data" --sandbox docker
+        pydantic-deep run "Train model" --workspace ml-env
     """
     from apps.cli.run import execute_headless
+
+    # --workspace implies --sandbox docker
+    if workspace and not sandbox:
+        sandbox = "docker"
 
     if task is None and task_file is None:
         typer.echo("Error: provide a task argument or --task-file", err=True)
@@ -262,6 +307,8 @@ def run(
             include_teams=include_teams,
             context_discovery=context_discovery,
             temperature=temperature,
+            sandbox=sandbox,
+            workspace=workspace,
             verbose=verbose,
         )
     )
@@ -326,6 +373,125 @@ def config_set(
         typer.echo(str(e), err=True)
         raise typer.Exit(1) from None
     typer.echo(f"Set {key} = {value}")
+
+
+# ── Sandbox subcommands ────────────────────────────────────────
+
+sandbox_app = typer.Typer(
+    name="sandbox", help="Manage Docker sandbox workspaces.", no_args_is_help=True
+)
+app.add_typer(sandbox_app)
+
+
+def _get_project_container_prefix() -> str:
+    """Return the Docker container name prefix for the current project."""
+    import hashlib
+
+    dir_hash = hashlib.md5(str(Path.cwd().resolve()).encode()).hexdigest()[:8]
+    return f"pydantic-deep-{dir_hash}-"
+
+
+@sandbox_app.command("list")
+def sandbox_list() -> None:
+    """List Docker sandbox workspaces for this project."""
+    try:
+        import docker
+    except ImportError:
+        typer.echo(
+            "Docker package not installed. Install with: pip install pydantic-ai-backend[docker]",
+            err=True,
+        )
+        raise typer.Exit(1) from None
+
+    prefix = _get_project_container_prefix()
+    client = docker.from_env()
+
+    containers = [c for c in client.containers.list(all=True) if c.name.startswith(prefix)]
+
+    if not containers:
+        typer.echo("No sandbox workspaces found for this project.")
+        return
+
+    console = Console()
+    table = Table(show_header=True, header_style="bold")
+    table.add_column("Workspace", style="cyan")
+    table.add_column("Status")
+    table.add_column("Image", style="dim")
+    table.add_column("Created", style="dim")
+
+    for c in sorted(containers, key=lambda x: x.name):
+        # Strip project prefix to show short workspace name
+        workspace_name = c.name[len(prefix) :]
+        status_style = "green" if c.status == "running" else "yellow"
+        table.add_row(
+            workspace_name,
+            Text(c.status, style=status_style),
+            c.image.tags[0] if c.image.tags else str(c.image.short_id),
+            c.attrs.get("Created", "")[:19],
+        )
+
+    console.print(table)
+    typer.echo(f"\nProject: {Path.cwd()}")
+    typer.echo(f"Prefix:  {prefix}*")
+
+
+@sandbox_app.command("stop")
+def sandbox_stop(
+    name: Annotated[
+        str | None,
+        typer.Argument(help="Workspace name to stop (or 'all')"),
+    ] = None,
+    remove: Annotated[
+        bool,
+        typer.Option("--rm", help="Remove workspace container after stopping"),
+    ] = False,
+) -> None:
+    """Stop sandbox workspaces for this project.
+
+    Examples:
+        pydantic-deep sandbox stop ml-env     # Stop one workspace
+        pydantic-deep sandbox stop all        # Stop all for this project
+        pydantic-deep sandbox stop all --rm   # Stop and remove all
+    """
+    try:
+        import docker
+    except ImportError:
+        typer.echo(
+            "Docker package not installed. Install with: pip install pydantic-ai-backend[docker]",
+            err=True,
+        )
+        raise typer.Exit(1) from None
+
+    if name is None:
+        typer.echo("Provide a workspace name or 'all'.", err=True)
+        raise typer.Exit(1)
+
+    prefix = _get_project_container_prefix()
+    client = docker.from_env()
+
+    if name == "all":
+        targets = [c for c in client.containers.list(all=True) if c.name.startswith(prefix)]
+    else:
+        full_name = f"{prefix}{name}"
+        try:
+            targets = [client.containers.get(full_name)]
+        except docker.errors.NotFound:
+            typer.echo(f"Workspace '{name}' not found.", err=True)
+            raise typer.Exit(1) from None
+
+    for c in targets:
+        short = c.name[len(prefix) :]
+        if c.status == "running":
+            c.stop()
+            typer.echo(f"Stopped: {short}")
+        if remove:
+            c.remove()
+            typer.echo(f"Removed: {short}")
+        elif c.status != "running":
+            typer.echo(f"Already stopped: {short}")
+
+    if not targets:
+        typer.echo("No containers to stop.")
 
 
 # ── Skills subcommands ──────────────────────────────────────────

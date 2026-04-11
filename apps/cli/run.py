@@ -36,6 +36,8 @@ async def execute_headless(  # noqa: C901
     context_discovery: bool | None = None,
     temperature: float | None = None,
     config_path: str | None = None,
+    sandbox: str | None = None,
+    workspace: str | None = None,
     verbose: bool = False,
 ) -> int:
     """Execute a task in headless mode and print the result.
@@ -101,38 +103,47 @@ async def execute_headless(  # noqa: C901
         agent_kwargs["context_discovery"] = context_discovery
     if temperature is not None:
         agent_kwargs["temperature"] = temperature
+    if sandbox is not None:
+        agent_kwargs["sandbox"] = sandbox
+    if workspace is not None:
+        agent_kwargs["workspace"] = workspace
 
     agent, deps = create_cli_agent(**agent_kwargs)
 
-    run_kwargs: dict[str, Any] = {
-        "usage_limits": DEFAULT_USAGE_LIMITS,
-    }
-    if max_turns is not None:
-        run_kwargs["max_turns"] = max_turns
+    try:
+        run_kwargs: dict[str, Any] = {
+            "usage_limits": DEFAULT_USAGE_LIMITS,
+        }
+        if max_turns is not None:
+            run_kwargs["max_turns"] = max_turns
 
-    if verbose:
-        run_coro = _run_verbose(agent, task, deps, run_kwargs)
-    else:
-        run_coro = agent.run(task, deps=deps, **run_kwargs)
+        if verbose:
+            run_coro = _run_verbose(agent, task, deps, run_kwargs)
+        else:
+            run_coro = agent.run(task, deps=deps, **run_kwargs)
 
-    if timeout is not None:
-        import asyncio
+        if timeout is not None:
+            import asyncio
 
-        try:
-            result = await asyncio.wait_for(run_coro, timeout=timeout)
-        except asyncio.TimeoutError:
-            _print_error("Timed out", output_json)
-            return 1
-    else:
-        result = await run_coro
+            try:
+                result = await asyncio.wait_for(run_coro, timeout=timeout)
+            except asyncio.TimeoutError:
+                _print_error("Timed out", output_json)
+                return 1
+        else:
+            result = await run_coro
 
-    if output_json:
-        output = _build_json_output(result.output, result.usage())
-        print(json.dumps(output, indent=2, default=str))
-    else:
-        print(result.output)
+        if output_json:
+            output = _build_json_output(result.output, result.usage())
+            print(json.dumps(output, indent=2, default=str))
+        else:
+            print(result.output)
 
-    return 0
+        return 0
+    finally:
+        # Stop Docker container if sandbox backend was used
+        if hasattr(deps.backend, "stop"):
+            deps.backend.stop()
 
 
 async def _run_verbose(  # noqa: C901

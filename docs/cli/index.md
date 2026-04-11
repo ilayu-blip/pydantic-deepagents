@@ -41,6 +41,7 @@ pydantic-deep run --task-file task.md --json
 pydantic-deep run "Refactor utils.py" --max-turns 50 --timeout 300
 pydantic-deep run -f task.md -w /path/to/project -m openai:gpt-5.4
 pydantic-deep run "Fix bug" --no-web-search --no-web-fetch --thinking false
+pydantic-deep run "Analyze data" --sandbox docker
 ```
 
 Executes a single task non-interactively and prints the result to stdout. Designed for benchmarks (Terminal Bench), CI/CD pipelines, and scripted automation.
@@ -67,6 +68,7 @@ All feature flags default from `.pydantic-deep/config.toml` — the same default
 | `--memory` / `--no-memory` | Persistent memory (from config) |
 | `--teams` / `--no-teams` | Agent teams (from config) |
 | `--context` / `--no-context` | Auto-discover AGENTS.md/SOUL.md (from config) |
+| `--sandbox`, `-s` | Sandbox backend: `local` or `docker` (from config) |
 
 JSON output includes the agent's response and token usage:
 
@@ -205,6 +207,70 @@ Four built-in color themes:
 
 Switch with `/theme ocean` or save to config.
 
+## Docker Sandbox
+
+Run the agent inside a Docker container for isolated code execution.
+The TUI stays in your terminal but all file operations and shell commands
+execute inside the container. Your working directory is mounted at
+`/workspace` so project files are shared.
+
+```bash
+# TUI with Docker sandbox (ephemeral — clean container every time)
+pydantic-deep tui --sandbox docker
+
+# Headless with Docker sandbox
+pydantic-deep run "Install pandas and analyze data.csv" --sandbox docker
+```
+
+Requires Docker to be running and `pydantic-ai-backend[docker]` installed:
+
+```bash
+pip install pydantic-ai-backend[docker]
+```
+
+### Named Containers (Reusable)
+
+By default, each session gets a fresh container. Use `--container <name>`
+to create a named container that persists between sessions — installed
+packages, caches, and other filesystem state survive restarts:
+
+```bash
+# Create/reuse a named container
+pydantic-deep tui --container ml-env
+pydantic-deep run "Train the model" --container ml-env
+
+# Different container for different workloads
+pydantic-deep tui --container web-dev
+```
+
+`--container` implies `--sandbox docker` automatically.
+
+### Container Management
+
+```bash
+# List containers for this project
+pydantic-deep sandbox list
+
+# Stop a named container
+pydantic-deep sandbox stop ml-env
+
+# Stop and remove all containers for this project
+pydantic-deep sandbox stop all --rm
+```
+
+### Config
+
+Set as default in config:
+
+```toml
+sandbox = "docker"
+sandbox_image = "python:3.12-slim"
+```
+
+The working directory is mounted read-write, so file changes always
+persist on the host. Shell commands, package installs, and other side
+effects stay inside the container.
+
 ## Configuration
 
 Config file: `.pydantic-deep/config.toml`
@@ -218,6 +284,8 @@ include_subagents = true
 web_search = true
 web_fetch = true
 approve_tools = ["execute"]
+sandbox = "local"
+sandbox_image = "python:3.12-slim"
 ```
 
 API keys: `.pydantic-deep/keys.toml` (managed via `/provider` command)

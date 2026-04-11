@@ -88,6 +88,30 @@ class TestCreateCliAgent:
         )
         assert agent is not None
 
+    def test_workspace_param_accepted(self, tmp_path: Path) -> None:
+        """workspace param is accepted without error (no Docker required for local sandbox)."""
+        agent, deps = create_cli_agent(
+            model=TEST_MODEL,
+            working_dir=str(tmp_path),
+            # workspace without sandbox="docker" → LocalBackend (no Docker needed)
+            workspace="ml-env",
+        )
+        assert agent is not None
+        # Local sandbox — workspace ignored when Docker is not active
+        from pydantic_ai_backends import LocalBackend
+
+        assert isinstance(deps.backend, LocalBackend)
+
+    def test_sandbox_local_is_default(self, tmp_path: Path) -> None:
+        """Default sandbox is local (no Docker)."""
+        agent, deps = create_cli_agent(
+            model=TEST_MODEL,
+            working_dir=str(tmp_path),
+        )
+        from pydantic_ai_backends import LocalBackend
+
+        assert isinstance(deps.backend, LocalBackend)
+
 
 class TestShellAllowListHook:
     """Tests for _make_shell_allow_list_hook()."""

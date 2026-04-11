@@ -92,6 +92,14 @@ pydantic-deep
 # Pick a model
 pydantic-deep tui --model anthropic:claude-sonnet-4-6
 
+# Docker sandbox — isolated execution, project dir mounted at /workspace
+pydantic-deep tui --sandbox docker
+pydantic-deep run "Install pandas and analyze data" --sandbox docker
+
+# Named container — packages persist between sessions
+pydantic-deep tui --container ml-env
+pydantic-deep sandbox list
+
 # Headless run (benchmarks, CI/CD, scripted automation)
 pydantic-deep run "Fix the failing test in test_auth.py"
 pydantic-deep run --task-file task.md --json

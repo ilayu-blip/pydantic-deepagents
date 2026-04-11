@@ -64,7 +64,9 @@ _BOOL_FIELDS = frozenset(
     }
 )
 
-_STR_FIELDS = frozenset({"model", "theme", "charset", "reasoning_effort", "thinking_effort"})
+_STR_FIELDS = frozenset(
+    {"model", "theme", "charset", "reasoning_effort", "thinking_effort", "sandbox", "sandbox_image"}
+)
 
 _INT_FIELDS = frozenset({"max_history", "thinking_budget"})
 
@@ -98,6 +100,10 @@ class CliConfig:
     """Tool names that require user approval before execution."""
     temperature: float | None = None
     reasoning_effort: str | None = None
+    sandbox: str = "local"
+    """Sandbox backend: ``"local"`` (default) or ``"docker"``."""
+    sandbox_image: str = "python:3.12-slim"
+    """Docker image used when ``sandbox = "docker"``."""
     logfire: bool = False
 
 
@@ -158,6 +164,11 @@ def validate_config(config: CliConfig) -> list[str]:
     if config.charset not in known_charsets:
         warnings.append(
             f"Unknown charset '{config.charset}'. Known: {', '.join(sorted(known_charsets))}"
+        )
+    known_sandboxes = {"local", "docker"}
+    if config.sandbox not in known_sandboxes:
+        warnings.append(
+            f"Unknown sandbox '{config.sandbox}'. Known: {', '.join(sorted(known_sandboxes))}"
         )
     if config.max_history < 0:
         warnings.append("max_history must be non-negative")

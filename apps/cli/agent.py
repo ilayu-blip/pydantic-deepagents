@@ -60,6 +60,9 @@ def create_cli_agent(  # noqa: C901
     summarization_model: str | None = None,
     extra_middleware: list[Any] | None = None,
     backend: Any | None = None,
+    sandbox: str | None = None,
+    sandbox_image: str | None = None,
+    workspace: str | None = None,
     *,
     include_skills: bool | None = None,
     include_plan: bool | None = None,
@@ -93,6 +96,17 @@ def create_cli_agent(  # noqa: C901
         on_context_update: Callback for context usage updates.
         extra_middleware: Additional middleware to include.
         backend: Override the file storage backend (e.g., DockerSandbox).
+            Takes precedence over ``sandbox``.
+        sandbox: Sandbox type: ``"local"`` or ``"docker"``. When ``"docker"``,
+            creates a DockerSandbox with the working directory mounted at
+            ``/workspace``. Falls back to ``config.sandbox``.
+        sandbox_image: Docker image for the sandbox container. Falls back to
+            ``config.sandbox_image`` (default: ``python:3.12-slim``).
+        workspace: Named Docker workspace shared across threads. When set, the
+            container persists between sessions so installed packages and any
+            files outside the mounted volume survive restarts. Multiple threads
+            (conversation histories) can share the same workspace. The actual
+            Docker container name is ``pydantic-deep-{dir_hash}-{workspace}``.
         include_skills: Whether to include the skills toolset.
         include_plan: Whether to include the planner subagent.
         include_memory: Whether to include persistent agent memory.
@@ -120,7 +134,29 @@ def create_cli_agent(  # noqa: C901
     effective_allow_list = shell_allow_list or config.shell_allow_list or None
 
     root = Path(effective_working_dir) if effective_working_dir else Path.cwd()
-    effective_backend = backend or LocalBackend(root_dir=root)
+
+    # Resolve sandbox: explicit param > config
+    effective_sandbox = sandbox or config.sandbox
+    if effective_sandbox == "docker" and backend is None:
+        from pydantic_ai_backends import DockerSandbox
+
+        docker_kwargs: dict[str, Any] = {
+            "volumes": {str(root.resolve()): "/workspace"},
+            "work_dir": "/workspace",
+            "image": sandbox_image or config.sandbox_image,
+        }
+
+        # Named workspace → reusable container (packages + state persist between threads)
+        # No workspace → ephemeral container (clean slate every time)
+        if workspace:
+            import hashlib
+
+            dir_hash = hashlib.md5(str(root.resolve()).encode()).hexdigest()[:8]
+            docker_kwargs["container_name"] = f"pydantic-deep-{dir_hash}-{workspace}"
+
+        effective_backend: Any = DockerSandbox(**docker_kwargs)
+    else:
+        effective_backend = backend or LocalBackend(root_dir=root)
 
     # Build hooks list
     hooks: list[Hook] = []
@@ -139,10 +175,12 @@ def create_cli_agent(  # noqa: C901
     )
 
     # Append working directory context
+    # When using Docker sandbox, the agent operates inside the container at /workspace
+    instruction_root = "/workspace" if effective_sandbox == "docker" else str(root.resolve())
     working_dir_section = (
         f"\n\n## Working Directory\n\n"
-        f"You are operating in: `{root.resolve()}`\n\n"
-        f"All file paths must be absolute, starting with `{root.resolve()}`."
+        f"You are operating in: `{instruction_root}`\n\n"
+        f"All file paths must be absolute, starting with `{instruction_root}`."
     )
     instructions += working_dir_section
 
