@@ -41,7 +41,6 @@ ResponseFormat = OutputSpec[object]
 OutputT = TypeVar("OutputT")
 
 
-
 @_dataclass
 class BrowseResult:
     """Result of a browser navigation or interaction.
