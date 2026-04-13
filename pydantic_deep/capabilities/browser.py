@@ -251,12 +251,13 @@ class BrowserCapability(AbstractCapability[Any]):
         """
         _require_browser()
         assert async_playwright is not None  # guaranteed by _require_browser()
+        _start_playwright = async_playwright  # local non-None reference for the closure
 
         _pw_ctx: Any = None  # Playwright context manager — entered lazily
 
         async def _launch() -> None:
             nonlocal _pw_ctx
-            _pw_ctx = async_playwright()
+            _pw_ctx = _start_playwright()
             pw = await _pw_ctx.__aenter__()
             self._state.playwright_instance = pw
 
